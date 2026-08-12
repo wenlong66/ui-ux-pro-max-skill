@@ -315,6 +315,7 @@ uipro init --ai kilocode    # KiloCode
 uipro init --ai warp        # Warp
 uipro init --ai augment     # Augment
 uipro init --ai codewhale   # CodeWhale
+uipro init --ai universal   # Universal / Agent Standard (.agents/skills/)
 uipro init --ai all         # 所有助手
 ```
 
@@ -325,6 +326,7 @@ npm 包名为 `ui-ux-pro-max-cli`；它仍然安装 `uipro` 命令。旧版 `uip
 ```bash
 uipro init --ai claude --global   # 安装到 ~/.claude/skills/
 uipro init --ai cursor --global   # 安装到 ~/.cursor/skills/
+uipro init --ai universal --global # 安装到 ~/.agents/skills/
 ```
 
 ### 其他 CLI 命令
@@ -332,6 +334,7 @@ uipro init --ai cursor --global   # 安装到 ~/.cursor/skills/
 ```bash
 uipro versions              # 列出可用版本
 uipro update                # 从已安装的 CLI 包刷新技能文件
+uipro update --global       # 从已安装的 CLI 包刷新全局技能文件
 uipro init --offline        # 兼容性标志；安装捆绑模板
 uipro uninstall             # 移除技能（自动检测平台）
 uipro uninstall --ai claude # 移除特定平台
@@ -572,7 +575,7 @@ uipro uninstall --global
 rm -rf .claude/skills/ui-ux-pro-max   # Claude Code
 rm -rf .cursor/skills/ui-ux-pro-max   # Cursor
 rm -rf .windsurf/skills/ui-ux-pro-max # Windsurf
-rm -rf .agents/skills/ui-ux-pro-max   # Antigravity
+rm -rf .agents/skills/ui-ux-pro-max   # Antigravity / Codex
 ```
 
 ### Claude Marketplace 安装失败，提示 "Zip file contains a symbolic link"

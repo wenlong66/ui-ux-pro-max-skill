@@ -315,6 +315,7 @@ uipro init --ai kilocode    # KiloCode
 uipro init --ai warp        # Warp
 uipro init --ai augment     # Augment
 uipro init --ai codewhale   # CodeWhale
+uipro init --ai universal   # Universal / Agent Standard (.agents/skills/)
 uipro init --ai all         # All assistants
 ```
 
@@ -325,6 +326,7 @@ The npm package is `ui-ux-pro-max-cli`; it still installs the `uipro` command. O
 ```bash
 uipro init --ai claude --global   # Install to ~/.claude/skills/
 uipro init --ai cursor --global   # Install to ~/.cursor/skills/
+uipro init --ai universal --global # Install to ~/.agents/skills/
 ```
 
 ### Other CLI Commands
@@ -332,6 +334,7 @@ uipro init --ai cursor --global   # Install to ~/.cursor/skills/
 ```bash
 uipro versions              # List available versions
 uipro update                # Refresh skill files from installed CLI package
+uipro update --global       # Refresh global skill files from installed CLI package
 uipro init --offline        # Compatibility flag; installs bundled templates
 uipro uninstall             # Remove skill (auto-detect platform)
 uipro uninstall --ai claude # Remove specific platform
@@ -579,7 +582,7 @@ uipro uninstall --global
 rm -rf .claude/skills/ui-ux-pro-max   # Claude Code
 rm -rf .cursor/skills/ui-ux-pro-max   # Cursor
 rm -rf .windsurf/skills/ui-ux-pro-max # Windsurf
-rm -rf .agents/skills/ui-ux-pro-max   # Antigravity
+rm -rf .agents/skills/ui-ux-pro-max   # Antigravity / Codex
 ```
 
 ### Claude Marketplace install fails with "Zip file contains a symbolic link"

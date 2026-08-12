@@ -55,6 +55,7 @@ program
   .command('update')
   .description('Update UI/UX Pro Max to latest version')
   .option('-a, --ai <type>', `AI assistant type (${AI_TYPES.join(', ')})`)
+  .option('-g, --global', 'Update global installation in home directory (~/)')
   .option('-t, --token <token>', 'GitHub Personal Access Token for higher API rate limits')
   .action(async (options) => {
     if (options.ai && !AI_TYPES.includes(options.ai)) {
@@ -64,6 +65,7 @@ program
     }
     await updateCommand({
       ai: options.ai as AIType | undefined,
+      global: options.global,
       token: options.token,
     });
   });

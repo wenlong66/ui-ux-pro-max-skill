@@ -21,6 +21,7 @@ export interface PlatformConfig {
     root: string;
     skillPath: string;
     filename: string;
+    dataPath?: string;
   };
   scriptPath: string;
   frontmatter: Record<string, string> | null;
@@ -53,6 +54,7 @@ const AI_TO_PLATFORM: Record<string, string> = {
   warp: 'warp',
   augment: 'augment',
   codewhale: 'codewhale',
+  universal: 'universal',
 };
 
 async function exists(path: string): Promise<boolean> {
@@ -151,12 +153,22 @@ export async function renderSkillFile(config: PlatformConfig, isGlobal = false):
     .replace(/\{\{SKILL_OR_WORKFLOW\}\}/g, config.skillOrWorkflow)
     .replace(/\{\{QUICK_REFERENCE\}\}/g, quickRefWithNewline);
 
+  // Rewrite the hardcoded default script path to the platform-specific path
+  const defaultScriptPath = 'skills/ui-ux-pro-max/scripts/search.py';
+  if (config.scriptPath !== defaultScriptPath) {
+    content = content.replace(
+      new RegExp(defaultScriptPath.replace(/\//g, '\\/'), 'g'),
+      config.scriptPath
+    );
+  }
+
   // For global install, rewrite relative script paths to absolute ~/root/ paths
   if (isGlobal) {
     const globalPrefix = `~/${config.folderStructure.root}/`;
+    // Match any platform's script path pattern (skills/, prompts/, steering/, etc.)
     content = content.replace(
-      /python3 skills\//g,
-      `python3 ${globalPrefix}skills/`
+      new RegExp(`python3 ${config.scriptPath.replace(/\//g, '\\/')}`, 'g'),
+      `python3 ${globalPrefix}${config.scriptPath}`
     );
   }
 
@@ -272,17 +284,24 @@ export async function generatePlatformFiles(
   await writeFile(skillFilePath, skillContent, 'utf-8');
   createdFolders.push(config.folderStructure.root);
 
-  // Copy data and scripts into the skill directory (self-contained)
-  await copyDataAndScripts(skillDir);
+  // Copy data and scripts into the data directory (may differ from skill file location)
+  const dataDir = config.folderStructure.dataPath
+    ? join(effectiveDir, config.folderStructure.root, config.folderStructure.dataPath)
+    : skillDir;
+  await mkdir(dataDir, { recursive: true });
+  await copyDataAndScripts(dataDir);
 
   // Install the sibling sub-skills (banner-design, brand, design, ...) next to
   // the orchestrator so all 7 skills are delivered. The skills parent is the
   // orchestrator's parent dir (skills/ for most platforms, prompts/ for
-  // copilot, steering/ for kiro) — derived, not hardcoded.
+  // copilot, steering/ for kiro) — derived, not hardcoded. For platforms with
+  // a separate dataPath (copilot), the orchestrator's data dir is the anchor.
   const skillsParentDir = join(
     effectiveDir,
     config.folderStructure.root,
-    dirname(config.folderStructure.skillPath)
+    config.folderStructure.dataPath
+      ? dirname(config.folderStructure.dataPath)
+      : dirname(config.folderStructure.skillPath)
   );
   await copySubSkills(skillsParentDir, force);
 
@@ -294,10 +313,20 @@ export async function generatePlatformFiles(
  */
 export async function generateAllPlatformFiles(targetDir: string, isGlobal = false, force = false): Promise<string[]> {
   const allFolders = new Set<string>();
+  const generatedSkillFiles = new Set<string>();
 
   for (const aiType of Object.keys(AI_TO_PLATFORM)) {
     try {
+      const config = await loadPlatformConfig(aiType);
+      const skillFile = join(
+        config.folderStructure.root,
+        config.folderStructure.skillPath,
+        config.folderStructure.filename
+      );
+      if (generatedSkillFiles.has(skillFile)) continue;
+
       const folders = await generatePlatformFiles(targetDir, aiType, isGlobal, force);
+      generatedSkillFiles.add(skillFile);
       folders.forEach(f => allFolders.add(f));
     } catch {
       // Skip if generation fails for a platform
