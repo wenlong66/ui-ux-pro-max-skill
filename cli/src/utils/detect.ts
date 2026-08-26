@@ -10,7 +10,7 @@ interface DetectionResult {
 export function detectAIType(cwd: string = process.cwd()): DetectionResult {
   const detected: ConcreteAIType[] = [];
 
-  if (existsSync(join(cwd, '.claude'))) {
+  if (existsSync(join(cwd, '.claude')) || existsSync(join(cwd, '.claude-plugin'))) {
     detected.push('claude');
   }
   if (existsSync(join(cwd, '.cursor'))) {
