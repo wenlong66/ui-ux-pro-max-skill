@@ -302,7 +302,7 @@ Jika belum ada, instal sendiri dari [python.org](https://www.python.org/download
 
 ### Mode Skill (Aktif Otomatis)
 
-**Didukung:** Claude Code, Cursor, Windsurf, Antigravity, Codex CLI, Continue, Gemini CLI, OpenCode, Qoder, CodeBuddy, Droid (Factory), KiloCode, Warp, Augment, CodeWhale
+**Didukung:** Claude Code, Cursor, Windsurf, Antigravity, Codex CLI, Continue, Gemini CLI, OpenCode, Qoder, CodeBuddy, Droid (Factory), KiloCode, Warp, Augment, CodeWhale, GitHub Copilot
 
 Skill akan aktif otomatis saat Anda meminta pekerjaan UI/UX. Cukup gunakan percakapan secara natural:
 
@@ -314,7 +314,7 @@ Build a landing page for my SaaS product
 
 ### Mode Workflow (Slash Command)
 
-**Didukung:** Kiro, GitHub Copilot, Roo Code, KiloCode
+**Didukung:** Kiro, Roo Code, KiloCode
 
 Gunakan slash command untuk menjalankan skill:
 

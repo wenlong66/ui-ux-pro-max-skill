@@ -284,7 +284,7 @@ python3 --version
 
 ### 스킬 모드(자동 활성화)
 
-**지원:** Claude Code, Cursor, Windsurf, Antigravity, Codex CLI, Continue, Gemini CLI, OpenCode, Qoder, CodeBuddy, Droid (Factory), KiloCode, Warp, Augment, CodeWhale
+**지원:** Claude Code, Cursor, Windsurf, Antigravity, Codex CLI, Continue, Gemini CLI, OpenCode, Qoder, CodeBuddy, Droid (Factory), KiloCode, Warp, Augment, CodeWhale, GitHub Copilot
 
 UI/UX 작업을 요청하면 스킬이 자동으로 활성화됩니다. 자연스럽게 요청하세요.
 
@@ -296,7 +296,7 @@ UI/UX 작업을 요청하면 스킬이 자동으로 활성화됩니다. 자연�
 
 ### 워크플로 모드(슬래시 명령어)
 
-**지원:** Kiro, GitHub Copilot, Roo Code, KiloCode
+**지원:** Kiro, Roo Code, KiloCode
 
 슬래시 명령어로 스킬을 실행하세요.
 

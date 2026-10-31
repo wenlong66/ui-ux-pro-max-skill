@@ -296,7 +296,7 @@ python3 --version
 
 ### 技能模式 (自动激活)
 
-**支持：** Claude Code、Cursor、Windsurf、Antigravity、Codex CLI、Continue、Gemini CLI、OpenCode、Qoder、CodeBuddy、Droid (Factory)、KiloCode、Warp、Augment、CodeWhale
+**支持：** Claude Code、Cursor、Windsurf、Antigravity、Codex CLI、Continue、Gemini CLI、OpenCode、Qoder、CodeBuddy、Droid (Factory)、KiloCode、Warp、Augment、CodeWhale、GitHub Copilot
 
 当你请求 UI/UX 工作时，技能会自动激活。只需自然地聊天：
 
@@ -308,7 +308,7 @@ python3 --version
 
 ### 工作流模式 (斜杠命令)
 
-**支持：** Kiro、GitHub Copilot、Roo Code、KiloCode
+**支持：** Kiro、Roo Code、KiloCode
 
 使用斜杠命令调用技能：
 

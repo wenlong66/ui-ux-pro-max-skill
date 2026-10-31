@@ -19,6 +19,9 @@ export interface PlatformConfig {
   installType: 'full' | 'reference';
   folderStructure: {
     root: string;
+    // Root used instead of `root` for --global installs, when the assistant
+    // reads personal skills from a different home folder (copilot: ~/.copilot).
+    globalRoot?: string;
     skillPath: string;
     filename: string;
     dataPath?: string;
@@ -32,6 +35,18 @@ export interface PlatformConfig {
   description: string;
   skillOrWorkflow: string;
 }
+
+/**
+ * Layouts an earlier CLI version installed and the current layout replaces.
+ * Paths are relative to the install base (project or home directory).
+ */
+const LEGACY_LAYOUTS: Record<string, { skillFiles: string[]; skillsParents: string[] }> = {
+  // Copilot used a prompt file in .github/prompts/ before it loaded Agent Skills.
+  copilot: {
+    skillFiles: ['.github/prompts/ui-ux-pro-max.prompt.md'],
+    skillsParents: ['.github/prompts'],
+  },
+};
 
 // Map AIType to platform config file name
 const AI_TO_PLATFORM: Record<string, string> = {
@@ -54,6 +69,11 @@ const AI_TO_PLATFORM: Record<string, string> = {
   warp: 'warp',
   augment: 'augment',
   codewhale: 'codewhale',
+  zcode: 'zcode',
+  kimi: 'kimi',
+  amazonq: 'amazonq',
+  openclaw: 'openclaw',
+  autoclaw: 'autoclaw',
   universal: 'universal',
 };
 
@@ -78,6 +98,14 @@ export async function loadPlatformConfig(aiType: string): Promise<PlatformConfig
   const configPath = join(ASSETS_DIR, 'templates', 'platforms', `${platformName}.json`);
   const content = await readFile(configPath, 'utf-8');
   return JSON.parse(content) as PlatformConfig;
+}
+
+/**
+ * The folder a platform installs into, relative to the project (local) or
+ * home directory (global).
+ */
+export function platformRoot(config: PlatformConfig, isGlobal: boolean): string {
+  return (isGlobal && config.folderStructure.globalRoot) || config.folderStructure.root;
 }
 
 /**
@@ -126,12 +154,28 @@ function renderFrontmatter(frontmatter: Record<string, string> | null): string {
 }
 
 /**
+ * Resolve {{#QR}}...{{/QR}} / {{#NOQR}}...{{/NOQR}} pairs so platforms that
+ * omit the inlined Quick Reference do not tell the agent to read empty
+ * "sections above".
+ */
+function applyQuickReferenceVariants(content: string, includeQuickReference: boolean): string {
+  const drop = includeQuickReference
+    ? /\{\{#NOQR\}\}[\s\S]*?\{\{\/NOQR\}\}/g
+    : /\{\{#QR\}\}[\s\S]*?\{\{\/QR\}\}/g;
+  const keep = includeQuickReference
+    ? /\{\{#QR\}\}([\s\S]*?)\{\{\/QR\}\}/g
+    : /\{\{#NOQR\}\}([\s\S]*?)\{\{\/NOQR\}\}/g;
+  return content.replace(drop, '').replace(keep, '$1');
+}
+
+/**
  * Render skill file content from template
  * When isGlobal=true, rewrites script paths to use ~/{root}/ prefix
  */
 export async function renderSkillFile(config: PlatformConfig, isGlobal = false): Promise<string> {
   // Load base template
   let content = await loadTemplate('base/skill-content.md');
+  content = applyQuickReferenceVariants(content, config.sections.quickReference);
 
   // Load quick reference if needed
   let quickReferenceContent = '';
@@ -142,7 +186,7 @@ export async function renderSkillFile(config: PlatformConfig, isGlobal = false):
   // scriptPath is relative to the platform root. Generated commands run from
   // the user's project root, so local installs need the platform root prefix;
   // global installs need the same path anchored at the user's home directory.
-  const rootedScriptPath = `${config.folderStructure.root}/${config.scriptPath}`
+  const rootedScriptPath = `${platformRoot(config, isGlobal)}/${config.scriptPath}`
     .replace(/\/{2,}/g, '/');
   const commandScriptPath = isGlobal ? `~/${rootedScriptPath}` : rootedScriptPath;
 
@@ -217,6 +261,42 @@ export async function listBundledSubSkills(): Promise<string[]> {
 }
 
 /**
+ * Paths of an earlier layout of aiType that exist under baseDir: the old skill
+ * file, the orchestrator folder and the bundled sub-skills left next to it.
+ * A sub-skill folder only counts when it holds a SKILL.md, so a user's own
+ * folder of the same name (e.g. `.github/prompts/design`) is left alone.
+ */
+export async function findLegacyInstallPaths(baseDir: string, aiType: string): Promise<string[]> {
+  const layout = LEGACY_LAYOUTS[aiType];
+  if (!layout) return [];
+
+  const found: string[] = [];
+  for (const skillFile of layout.skillFiles) {
+    if (await exists(join(baseDir, skillFile))) found.push(skillFile);
+  }
+  for (const parent of layout.skillsParents) {
+    const orchestratorDir = `${parent}/ui-ux-pro-max`;
+    if (await exists(join(baseDir, orchestratorDir))) found.push(orchestratorDir);
+    for (const name of await listBundledSubSkills()) {
+      const subSkillDir = `${parent}/${name}`;
+      if (await exists(join(baseDir, subSkillDir, 'SKILL.md'))) found.push(subSkillDir);
+    }
+  }
+  return found;
+}
+
+/**
+ * Remove an earlier layout of aiType from baseDir. Returns the removed paths.
+ */
+export async function removeLegacyInstall(baseDir: string, aiType: string): Promise<string[]> {
+  const found = await findLegacyInstallPaths(baseDir, aiType);
+  for (const path of found) {
+    await rm(join(baseDir, path), { recursive: true, force: true });
+  }
+  return found;
+}
+
+/**
  * Install the bundled sub-skills as siblings of the orchestrator skill, so a
  * single `uipro init` delivers all 7 skills instead of only ui-ux-pro-max.
  */
@@ -242,6 +322,7 @@ function resolveInstallPaths(
   targetDir: string,
   isGlobal: boolean
 ): {
+  baseDir: string;
   skillDir: string;
   skillFilePath: string;
   dataDir: string;
@@ -249,33 +330,34 @@ function resolveInstallPaths(
 } {
   // For global install, target the user's home directory
   const effectiveDir = isGlobal ? homedir() : targetDir;
+  const root = platformRoot(config, isGlobal);
 
   // Determine full skill directory path
   const skillDir = join(
     effectiveDir,
-    config.folderStructure.root,
+    root,
     config.folderStructure.skillPath
   );
   const skillFilePath = join(skillDir, config.folderStructure.filename);
 
   // Copy data and scripts into the data directory (may differ from skill file location)
   const dataDir = config.folderStructure.dataPath
-    ? join(effectiveDir, config.folderStructure.root, config.folderStructure.dataPath)
+    ? join(effectiveDir, root, config.folderStructure.dataPath)
     : skillDir;
 
   // The skills parent is the orchestrator's parent dir (skills/ for most
-  // platforms, prompts/ for copilot, steering/ for kiro) — derived, not
-  // hardcoded. For platforms with a separate dataPath (copilot), the
-  // orchestrator's data dir is the anchor.
+  // platforms, steering/ for kiro) — derived, not hardcoded. For platforms
+  // with a separate dataPath (amazonq), the orchestrator's data dir is the
+  // anchor.
   const skillsParentDir = join(
     effectiveDir,
-    config.folderStructure.root,
+    root,
     config.folderStructure.dataPath
       ? dirname(config.folderStructure.dataPath)
       : dirname(config.folderStructure.skillPath)
   );
 
-  return { skillDir, skillFilePath, dataDir, skillsParentDir };
+  return { baseDir: effectiveDir, skillDir, skillFilePath, dataDir, skillsParentDir };
 }
 
 /**
@@ -291,7 +373,7 @@ export async function generatePlatformFiles(
 ): Promise<string[]> {
   const config = await loadPlatformConfig(aiType);
   const createdFolders: string[] = [];
-  const { skillDir, skillFilePath, dataDir, skillsParentDir } = resolveInstallPaths(
+  const { baseDir, skillDir, skillFilePath, dataDir, skillsParentDir } = resolveInstallPaths(
     config,
     targetDir,
     isGlobal
@@ -310,7 +392,7 @@ export async function generatePlatformFiles(
   }
 
   await writeFile(skillFilePath, skillContent, 'utf-8');
-  createdFolders.push(config.folderStructure.root);
+  createdFolders.push(platformRoot(config, isGlobal));
 
   await mkdir(dataDir, { recursive: true });
   await copyDataAndScripts(dataDir);
@@ -318,6 +400,11 @@ export async function generatePlatformFiles(
   // Install the sibling sub-skills (banner-design, brand, design, ...) next to
   // the orchestrator so all 7 skills are delivered.
   await copySubSkills(skillsParentDir, force);
+
+  // The new layout replaces an earlier one (copilot's .github/prompts/ install).
+  for (const path of await removeLegacyInstall(baseDir, aiType)) {
+    console.log(`  Removed legacy install: ${join(baseDir, path)}`);
+  }
 
   return createdFolders;
 }
@@ -333,7 +420,7 @@ export async function planPlatformInstallActions(
   force = false
 ): Promise<string[]> {
   const config = await loadPlatformConfig(aiType);
-  const { skillFilePath, dataDir, skillsParentDir } = resolveInstallPaths(config, targetDir, isGlobal);
+  const { baseDir, skillFilePath, dataDir, skillsParentDir } = resolveInstallPaths(config, targetDir, isGlobal);
 
   const actions: string[] = [];
   const skillFileExists = await exists(skillFilePath);
@@ -349,6 +436,12 @@ export async function planPlatformInstallActions(
     actions.push(
       `Would copy ${subSkills.length} sub-skills (${subSkills.join(', ')}): ${skillsParentDir}`
     );
+  }
+
+  if (!skillFileExists || force) {
+    for (const path of await findLegacyInstallPaths(baseDir, aiType)) {
+      actions.push(`Would remove legacy install: ${join(baseDir, path)}`);
+    }
   }
 
   return actions;

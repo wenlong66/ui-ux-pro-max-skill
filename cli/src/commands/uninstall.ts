@@ -7,7 +7,12 @@ import prompts from 'prompts';
 import type { AIType, ConcreteAIType } from '../types/index.js';
 import { AI_TYPES, AI_FOLDERS } from '../types/index.js';
 import { detectAIType, getAITypeDescription } from '../utils/detect.js';
-import { listBundledSubSkills, loadPlatformConfig } from '../utils/template.js';
+import {
+  listBundledSubSkills,
+  loadPlatformConfig,
+  platformRoot,
+  removeLegacyInstall,
+} from '../utils/template.js';
 import { logger } from '../utils/logger.js';
 
 interface UninstallOptions {
@@ -18,29 +23,35 @@ interface UninstallOptions {
 /**
  * Remove skill directory for a given AI type
  */
-async function removeSkillDir(baseDir: string, aiType: ConcreteAIType): Promise<string[]> {
+export async function removeSkillDir(
+  baseDir: string,
+  aiType: ConcreteAIType,
+  isGlobal = false
+): Promise<string[]> {
   const removed: string[] = [];
 
   // The orchestrator plus the bundled sibling sub-skills installed by init.
   const skillNames = ['ui-ux-pro-max', ...(await listBundledSubSkills())];
 
   // Parent directories to clean. Derive the real install location from the
-  // platform config's skillPath (same source the installer uses), so
-  // non-`skills/` platforms are handled — copilot installs under
-  // `.github/prompts/`, kiro under `.kiro/steering/`. Also clean the legacy
+  // platform config's skillPath and root (same source the installer uses), so
+  // non-`skills/` platforms (kiro's `.kiro/steering/`) and global roots
+  // (copilot's `~/.copilot/`) are handled. Also clean the legacy
   // `<folder>/skills/` layout (incl. `.shared/`) so older installs are removed.
   const parents = new Set<string>();
   // Standalone skill files to remove (platforms with a dataPath keep the
-  // rendered skill file apart from the data directory — e.g. copilot's
-  // `.github/prompts/ui-ux-pro-max.prompt.md`).
+  // rendered skill file apart from the data directory — e.g. amazonq's
+  // `.amazonq/rules/ui-ux-pro-max.md`).
   const skillFiles = new Set<string>();
   try {
-    const { folderStructure } = await loadPlatformConfig(aiType);
+    const config = await loadPlatformConfig(aiType);
+    const { folderStructure } = config;
+    const root = platformRoot(config, isGlobal);
     if (folderStructure.dataPath) {
-      skillFiles.add(join(folderStructure.root, folderStructure.skillPath, folderStructure.filename));
-      parents.add(join(folderStructure.root, dirname(folderStructure.dataPath)));
+      skillFiles.add(join(root, folderStructure.skillPath, folderStructure.filename));
+      parents.add(join(root, dirname(folderStructure.dataPath)));
     } else {
-      parents.add(join(folderStructure.root, dirname(folderStructure.skillPath)));
+      parents.add(join(root, dirname(folderStructure.skillPath)));
     }
   } catch {
     // No platform config — fall back to the legacy folders below.
@@ -74,6 +85,9 @@ async function removeSkillDir(baseDir: string, aiType: ConcreteAIType): Promise<
       }
     }
   }
+
+  // An install from an earlier layout (copilot's `.github/prompts/`).
+  removed.push(...(await removeLegacyInstall(baseDir, aiType)));
 
   return removed;
 }
@@ -143,11 +157,11 @@ export async function uninstallCommand(options: UninstallOptions): Promise<void>
     if (aiType === 'all') {
       // Remove for all detected platforms
       for (const type of initialDetected) {
-        const removed = await removeSkillDir(baseDir, type);
+        const removed = await removeSkillDir(baseDir, type, isGlobal);
         allRemoved.push(...removed);
       }
     } else {
-      const removed = await removeSkillDir(baseDir, aiType);
+      const removed = await removeSkillDir(baseDir, aiType, isGlobal);
       allRemoved.push(...removed);
     }
 

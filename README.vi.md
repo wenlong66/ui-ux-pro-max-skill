@@ -295,7 +295,7 @@ Nếu chưa có, hãy tự cài đặt từ [python.org](https://www.python.org/
 
 ### Chế độ Kỹ năng (tự động kích hoạt)
 
-**Được hỗ trợ:** Claude Code, Cursor, Windsurf, Antigravity, Codex CLI, Continue, Gemini CLI, OpenCode, Qoder, CodeBuddy, Droid (Factory), KiloCode, Warp, Augment, CodeWhale
+**Được hỗ trợ:** Claude Code, Cursor, Windsurf, Antigravity, Codex CLI, Continue, Gemini CLI, OpenCode, Qoder, CodeBuddy, Droid (Factory), KiloCode, Warp, Augment, CodeWhale, GitHub Copilot
 
 Kỹ năng tự động kích hoạt khi bạn yêu cầu công việc UI/UX. Chỉ cần trò chuyện tự nhiên:
 
@@ -307,7 +307,7 @@ Xây dựng landing page cho sản phẩm SaaS của tôi
 
 ### Chế độ Quy trình (lệnh slash)
 
-**Được hỗ trợ:** Kiro, GitHub Copilot, Roo Code, KiloCode
+**Được hỗ trợ:** Kiro, Roo Code, KiloCode
 
 Dùng lệnh slash để gọi kỹ năng:
 

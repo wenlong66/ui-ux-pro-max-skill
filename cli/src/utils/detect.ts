@@ -7,6 +7,19 @@ interface DetectionResult {
   suggested: AIType | null;
 }
 
+// Files and folders only GitHub Copilot reads (see the Copilot customization
+// cheat sheet), plus its personal skills folder for global installs. Most
+// repositories have a .github/ folder for workflows, so it alone says nothing.
+const COPILOT_MARKERS = [
+  join('.github', 'copilot-instructions.md'),
+  join('.github', 'instructions'),
+  join('.github', 'prompts'),
+  join('.github', 'agents'),
+  join('.github', 'skills'),
+  join('.github', 'hooks'),
+  join('.copilot', 'skills'),
+];
+
 export function detectAIType(cwd: string = process.cwd()): DetectionResult {
   const detected: ConcreteAIType[] = [];
 
@@ -23,10 +36,11 @@ export function detectAIType(cwd: string = process.cwd()): DetectionResult {
     detected.push('antigravity');
     detected.push('codex');
     detected.push('universal');
+    detected.push('openclaw');
   } else if (existsSync(join(cwd, '.agent'))) {
     detected.push('antigravity');
   }
-  if (existsSync(join(cwd, '.github'))) {
+  if (COPILOT_MARKERS.some(marker => existsSync(join(cwd, marker)))) {
     detected.push('copilot');
   }
   if (existsSync(join(cwd, '.kiro'))) {
@@ -71,13 +85,25 @@ export function detectAIType(cwd: string = process.cwd()): DetectionResult {
   if (existsSync(join(cwd, '.codewhale'))) {
     detected.push('codewhale');
   }
+  if (existsSync(join(cwd, '.zcode'))) {
+    detected.push('zcode');
+  }
+  if (existsSync(join(cwd, '.autoclaw')) || existsSync(join(cwd, 'skills', 'ui-ux-pro-max', 'SKILL.md'))) {
+    detected.push('autoclaw');
+  }
+  if (existsSync(join(cwd, '.kimi-code'))) {
+    detected.push('kimi');
+  }
+  if (existsSync(join(cwd, '.amazonq'))) {
+    detected.push('amazonq');
+  }
 
   // Suggest based on what's detected
   let suggested: AIType | null = null;
   if (detected.length === 1) {
     suggested = detected[0];
   } else if (
-    (detected.length === 2 || detected.length === 3) &&
+    (detected.length >= 2 && detected.length <= 4) &&
     detected.includes('antigravity') &&
     detected.includes('codex')
   ) {
@@ -101,7 +127,7 @@ export function getAITypeDescription(aiType: AIType): string {
     case 'antigravity':
       return 'Antigravity (.agents/skills/)';
     case 'copilot':
-      return 'GitHub Copilot (.github/prompts/)';
+      return 'GitHub Copilot (.github/skills/)';
     case 'kiro':
       return 'Kiro (.kiro/steering/)';
     case 'codex':
@@ -130,6 +156,16 @@ export function getAITypeDescription(aiType: AIType): string {
       return 'Augment (.augment/skills/)';
     case 'codewhale':
       return 'CodeWhale (.codewhale/skills/)';
+    case 'zcode':
+      return 'ZCode (.zcode/skills/)';
+    case 'kimi':
+      return 'Kimi Code (.kimi-code/skills/)';
+    case 'amazonq':
+      return 'Amazon Q Developer (.amazonq/rules/)';
+    case 'openclaw':
+      return 'OpenClaw (.agents/skills/)';
+    case 'autoclaw':
+      return 'AutoClaw (skills/ locally, ~/.openclaw-autoclaw/skills/ globally)';
     case 'universal':
       return 'Universal (.agents/skills/)';
     case 'all':
