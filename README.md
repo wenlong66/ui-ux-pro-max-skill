@@ -3,16 +3,18 @@
 <p align="center">
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.az.md">🇦🇿 Azərbaycanca</a> |
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.id.md">🇮🇩 Bahasa Indonesia</a> |
+  <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.ja.md">🇯🇵 日本語</a> |
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.ko.md">🇰🇷 한국어</a> |
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.vi.md">🇻🇳 Tiếng Việt</a> |
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.zh.md">🇨🇳 简体中文</a> |
-  <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.md">🇺🇸 English</a>
+  <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.md">🇺🇸 English</a> |
+  <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/README.fa.md">🇮🇷 فارسی</a>
 </p>
 
 <p align="center">
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/releases"><img src="https://img.shields.io/github/v/release/nextlevelbuilder/ui-ux-pro-max-skill?style=for-the-badge&color=blue" alt="GitHub Release"></a>
   <img src="https://img.shields.io/badge/reasoning_rules-192-green?style=for-the-badge" alt="192 Reasoning Rules">
-  <img src="https://img.shields.io/badge/UI_styles-79_searchable-purple?style=for-the-badge" alt="79 searchable UI styles">
+  <img src="https://img.shields.io/badge/UI_styles-80_searchable-purple?style=for-the-badge" alt="80 searchable UI styles">
   <img src="https://img.shields.io/badge/python-3.x-yellow?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.x">
   <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/blob/main/LICENSE"><img src="https://img.shields.io/github/license/nextlevelbuilder/ui-ux-pro-max-skill?style=for-the-badge&color=green" alt="License"></a>
 </p>
@@ -141,7 +143,7 @@ The flagship feature of v2.0 is the **Design System Generator** - an AI-powered 
 ┌─────────────────────────────────────────────────────────────────┐
 │  2. MULTI-DOMAIN SEARCH (5 parallel searches)                   │
 │     • Product type matching (192 categories)                    │
-│     • Style recommendations (79 searchable; 50 active)          │
+│     • Style recommendations (80 searchable; 51 active)          │
 │     • Color palette selection (192 palettes)                    │
 │     • Landing page patterns (34 patterns)                       │
 │     • Typography pairing (74 font combinations)                 │
@@ -189,7 +191,7 @@ Each rule includes:
 
 ## Features
 
-- **79 Searchable UI Styles (50 active)** - Glassmorphism, Claymorphism, Minimalism, Brutalism, Neumorphism, Bento Grid, Dark Mode, AI-Native UI, and more
+- **80 Searchable UI Styles (51 active)** - Glassmorphism, Claymorphism, Minimalism, Brutalism, Neumorphism, Bento Grid, Dark Mode, AI-Native UI, and more
 - **192 Color Palettes** - Industry-specific palettes aligned 1:1 with the 192 product types
 - **74 Font Pairings** - Curated typography combinations with Google Fonts imports
 - **25 Chart Types** - Recommendations for dashboards and analytics
@@ -218,15 +220,15 @@ chips, badges, and interrupted micro-interactions:
 
 ### Style Taxonomy
 
-The catalog contains **79 searchable styles** backed by stable IDs and aliases:
+The catalog contains **80 searchable styles** backed by stable IDs and aliases:
 
 | Status | Count | Search behavior |
 |--------|------:|-----------------|
-| Active | 50 | Included in normal recommendations and shown by default in the gallery |
+| Active | 51 | Included in normal recommendations and shown by default in the gallery |
 | Supplemental | 29 | Returned for exact or explicit variant/system intent; available through the gallery status filter |
 | Deprecated | 9 | Excluded from normal ranking; legacy names redirect to a canonical style or landing pattern |
 
-The active set covers 43 general visual families, 2 mobile-specific styles, 3 official platform/design systems, 1 platform material, and 1 core analytics style. Current official systems include Fluent 2, Shopify Polaris, and Adobe Spectrum; Liquid Glass is scoped as an Apple platform material, Material 3 Expressive remains a mobile Material variant, and Spectrum 2 is supplemental. Landing-page structures live in the separate 34-pattern landing dataset rather than competing with visual styles in BM25 ranking.
+The active set covers 43 general visual families, 2 mobile-specific styles, 4 official platform/design systems, 1 platform material, and 1 core analytics style. Current official systems include Fluent 2, Shopify Polaris, Adobe Spectrum, and Apple Native Experience; Liquid Glass is scoped as an Apple platform material, Material 3 Expressive remains a mobile Material variant, and Spectrum 2 is supplemental. Landing-page structures live in the separate 34-pattern landing dataset rather than competing with visual styles in BM25 ranking.
 
 See [`styles.csv`](src/ui-ux-pro-max/data/styles.csv) for the full taxonomy and provenance-aware metadata.
 
@@ -236,7 +238,7 @@ Many users ask about the differences between the open-source and premium version
 
 ### 🟢 Basic Version (This Repository)
 * **Fully Open Source:** Perfect for individual developers, hobbyists, and standard projects.
-* **Core UI/UX Intelligence:** Full access to 79 searchable UI styles (50 active), 192 product types, color palettes, and curated font pairings.
+* **Core UI/UX Intelligence:** Full access to 80 searchable UI styles (51 active), 192 product types, color palettes, and curated font pairings.
 * **Smart Recommendations:** Built-in BM25 search engine for highly accurate design matching.
 * **Cross-Platform Support:** Stack-specific guidelines supporting 22 major frameworks (React, Vue, Tailwind, iOS, Android, etc.).
 * **Design System Generation:** Instantly generate tailored UI rules, patterns, and logic via CLI.
@@ -458,6 +460,10 @@ python3 .claude/skills/ui-ux-pro-max/scripts/search.py "orphan heading line bala
 python3 .claude/skills/ui-ux-pro-max/scripts/search.py "badge chip label wraps to second line" --domain ux
 python3 .claude/skills/ui-ux-pro-max/scripts/search.py "rapid chip animation interrupted" --domain ux
 
+# RTL / Arabic, Hebrew, Persian interfaces (style and product domains)
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "dashboard" --domain style --rtl=full
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "fintech" --domain product --rtl=partial
+
 # Stack-specific guidelines
 python3 .claude/skills/ui-ux-pro-max/scripts/search.py "form validation" --stack react
 python3 .claude/skills/ui-ux-pro-max/scripts/search.py "responsive layout" --stack html-tailwind
@@ -472,6 +478,30 @@ active guidance. Explicit legacy terms or older majors (for example, `Svelte 4`
 or `Next.js 15`) return only curated legacy rows, labeled by `Status` and
 `Applies To`; when no matching legacy guidance is curated, search returns no
 results instead of mixing framework generations.
+
+### RTL Compatibility (`--rtl`)
+
+Every style and product row carries an `rtl_level` for right-to-left interfaces
+(Arabic, Hebrew, Persian, Urdu):
+
+| Level | Meaning |
+|-------|---------|
+| `full` | Direction-agnostic: the layout survives mirroring unchanged. |
+| `partial` | Mirrors cleanly, but individual components and motion need adjustment. |
+| `caveats` | The style or product encodes reading direction (kinetic typography, LTR timelines, code/terminal surfaces, maps and seat ordering). |
+
+```bash
+# Only styles that mirror without extra work
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "dashboard" --domain style --rtl=full
+
+# All levels, filtered results still tagged with rtl_level
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "mobile" --domain style --rtl
+```
+
+`--rtl` requires an explicit `--domain style` or `--domain product`. The filter
+is applied after ranking but before `-n/--max-results` truncation, so a narrow
+limit never hides a matching row. It is rejected with `--design-system` and
+`--stack`.
 
 ### Persist Design System (Master + Overrides Pattern)
 
