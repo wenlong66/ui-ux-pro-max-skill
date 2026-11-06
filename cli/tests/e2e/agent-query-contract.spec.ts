@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 import { loadAllPlatformConfigs, renderSkillFile } from '../../src/utils/template.js';
 
 const DESCRIPTION =
-  'UI/UX design intelligence for web, mobile, and desktop. This skill should be used when designing, building, reviewing, or fixing interfaces, including pages, components, design systems, accessibility, interaction, responsive layout, typography, color, charts, and stack-specific UI implementation. Searchable local data: 79 searchable styles (50 active), 192 product palettes and reasoning profiles, 74 font pairings, 119 UX guidelines, 105 icons, 17 GSAP presets, 25 chart types, and 22 stacks.';
+  'UI/UX design intelligence for web, mobile, and desktop. This skill should be used when designing, building, reviewing, or fixing interfaces, including pages, components, design systems, accessibility, interaction, responsive layout, typography, color, charts, and stack-specific UI implementation. Searchable local data: 80 searchable styles (51 active), 192 product palettes and reasoning profiles, 74 font pairings, 119 UX guidelines, 105 icons, 17 GSAP presets, 25 chart types, and 22 stacks.';
 
 test('all platform metadata uses one accurate activation description', async () => {
   const configs = await loadAllPlatformConfigs();
-  expect(configs.size).toBe(20);
+  expect(configs.size).toBe(25);
   for (const [platform, config] of configs) {
     expect(config.description, platform).toBe(DESCRIPTION);
     if (config.frontmatter?.description) {
@@ -48,4 +48,35 @@ test('rendered examples encode mode, retry, and persistence boundaries', async (
   expect(content).toContain('virtualized list' + '" --stack react-native');
   expect(content).toContain('--output-dir "<project-root>"');
   expect(content).toContain('Read an existing `MASTER.md` before deciding whether `--force` is justified');
+});
+
+test('quick-reference copy matches whether the section is inlined', async () => {
+  const configs = await loadAllPlatformConfigs();
+  const danglingTag = /\{\{#(NO)?QR\}\}|\{\{\/(NO)?QR\}\}/;
+
+  for (const [platform, config] of configs) {
+    const content = await renderSkillFile(config);
+    expect(content, platform).not.toMatch(danglingTag);
+
+    if (config.sections.quickReference) {
+      expect(content, platform).toContain('## Quick Reference');
+      expect(content, platform).toContain('rely on the Quick Reference sections above');
+      expect(content, platform).toContain('Quick Reference checklist above');
+      expect(content, platform).toContain('Quick Reference → relevant section');
+      expect(content, platform).toContain('Quick Reference §6:');
+      expect(content, platform).toContain('apply the relevant Quick Reference sections and focused searches');
+      expect(content, platform).toContain('Run through Quick Reference **§1–§3**');
+      expect(content, platform).not.toContain('use the Search Reference, Common Rules, and Pre-Delivery Checklist in this skill');
+    } else {
+      expect(content, platform).not.toContain('## Quick Reference');
+      expect(content, platform).not.toContain('Quick Reference sections above');
+      expect(content, platform).not.toContain('Quick Reference checklist above');
+      expect(content, platform).not.toContain('Quick Reference →');
+      expect(content, platform).not.toContain('Quick Reference §');
+      expect(content, platform).toContain('use the Search Reference, Common Rules, and Pre-Delivery Checklist in this skill');
+      expect(content, platform).toContain('Step 3 (`ux` domain) + Common Rules');
+      expect(content, platform).toContain('`"color-dark-mode color-accessible-pairs" --domain ux`');
+      expect(content, platform).toContain('apply focused domain searches and the Common Rules below');
+    }
+  }
 });
