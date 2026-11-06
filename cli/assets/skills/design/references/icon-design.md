@@ -116,6 +116,8 @@ python3 scripts/icon/generate.py --list-categories
 
 ## Setup
 
+The commands below use Bash syntax. In PowerShell, set credentials with `$env:NAME = "value"` instead of `export NAME="value"`, and use the available Python 3 interpreter (`python`, `python3`, or `py -3`). Keep credentials in the process environment, outside the skill package.
+
 ```bash
 export GEMINI_API_KEY="your-key"
 pip install google-genai

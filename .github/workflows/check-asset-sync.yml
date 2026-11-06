@@ -46,16 +46,10 @@ jobs:
       # and variable-rooted ("$HOME/...", "${PWD}/...") forms each work in only one of them.
       # Every file under both skill trees is checked, not just SKILL.md - the first
       # version of this step looked only at SKILL.md and missed 27 home-rooted paths
-      # one directory down in references/. The one allowed absolute form is
-      # "${CLAUDE_PLUGIN_ROOT}/.claude/skills/ui-ux-pro-max/..." (braced or bare variable,
-      # directly followed by "/"): the core skill's SKILL.md is hand-authored for the
-      # plugin install only and that variable anchors it there. The same variable into a
-      # sub-skill is flagged, because sub-skills are also installed by the CLI where it is
-      # unset - and a third check pins the token itself to that one file (plus the checker
-      # that names it), so a sub-skill cannot borrow the core form either: sub-skills ship
-      # through the CLI too, where the variable does not exist. Both patterns require a path INTO a named skill ("skills/<name>"), so a bare
-      # mention of the directory in prose or a code comment ("~/.claude/skills/, or ...")
-      # is not a hit - naming a skill after "skills/" in prose is.
+      # one directory down in references/. The core skill follows the same rule:
+      # ordinary skill commands cannot assume hook-only plugin environment variables.
+      # Both patterns require a path INTO a named skill ("skills/<name>"), so a bare
+      # directory mention in prose or a code comment is not a hit.
       # LC_ALL=C so that only NUL-containing files count as binary and an offending line
       # with a stray non-UTF-8 byte is printed instead of suppressed as improperly encoded
       # (the verdict is the same in both locales; the diagnostic is not); -I then skips
@@ -78,21 +72,20 @@ jobs:
             echo "::error::home-rooted skill paths (~/.claude/skills/<skill>) only resolve for one install layout - use skill-relative paths (see #474); grep rc=$rc"
             status=1
           fi
-          rc=0; LC_ALL=C grep -rnIP '(?<![/\w])\.claude/skills/[A-Za-z0-9_-]+\b|(?<!~)(?<!\$CLAUDE_PLUGIN_ROOT)(?<!\$\{CLAUDE_PLUGIN_ROOT\})/\.claude/skills/[A-Za-z0-9_-]+\b|\$\{?CLAUDE_PLUGIN_ROOT\}?/\.claude/skills/(?!ui-ux-pro-max\b)[A-Za-z0-9_-]+\b' .claude/skills cli/assets/skills || rc=$?
+          rc=0; LC_ALL=C grep -rnIP '(?<![/\w])\.claude/skills/[A-Za-z0-9_-]+\b|/\.claude/skills/[A-Za-z0-9_-]+\b' .claude/skills cli/assets/skills || rc=$?
           if [ "$rc" -ne 1 ]; then
-            echo "::error::project- or variable-rooted skill paths (.claude/skills/<skill>, \$HOME/..., \${CLAUDE_PLUGIN_ROOT}/... outside the core skill) only resolve for one install layout - use skill-relative paths (see #474); grep rc=$rc"
+            echo "::error::project- or variable-rooted skill paths only resolve for one install layout - use skill-relative paths (see #474); grep rc=$rc"
             status=1
           fi
-          rc=0; found=$(LC_ALL=C grep -rlIF 'CLAUDE_PLUGIN_ROOT' .claude/skills cli/assets/skills) || rc=$?
-          if [ "$rc" -eq 2 ]; then echo "::error::grep failed while scanning for CLAUDE_PLUGIN_ROOT (rc=2)"; status=1; fi
-          offenders=$(printf '%s\n' "$found" | grep -vxF -e '.claude/skills/ui-ux-pro-max/SKILL.md' -e '.claude/skills/ui-ux-pro-max/scripts/tests/test_skill_script_paths.py' | grep -v '^$' || true)
-          if [ -n "$offenders" ]; then
-            printf '%s\n' "$offenders"
-            echo "::error::CLAUDE_PLUGIN_ROOT is only defined under a plugin install; only the plugin-only core SKILL.md may use it - sub-skills ship through the CLI too (see #474)"
+          rc=0; LC_ALL=C grep -rnIF 'CLAUDE_PLUGIN_ROOT' .claude/skills cli/assets/skills || rc=$?
+          if [ "$rc" -ne 1 ]; then
+            echo "::error::plugin environment variables are not available to ordinary skill commands - resolve scripts from the loaded SKILL.md; grep rc=$rc"
             status=1
           fi
           if [ "$status" -eq 0 ]; then echo "OK: all skill paths are skill-relative"; fi
           exit "$status"
+      - name: Check portable skill instructions and relocated plugin execution
+        run: python3 src/ui-ux-pro-max/scripts/tests/test_skill_script_paths.py
       # Bundled-skill contract (#474 finding 2): the skill directories under .claude/skills are
       # everything a plugin or CLI install ships, so a workflow step that names a skill outside
       # that set ("frontend-design", "chrome-devtools", ...) or a claudekit command namespace

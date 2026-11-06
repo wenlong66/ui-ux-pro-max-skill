@@ -78,7 +78,7 @@ Options: `--style`, `--industry`, `--prompt`, `--provider`, `--atlas-model`, `--
 
 1. Generate design brief → `scripts/logo/search.py --design-brief`
 2. Generate logo variations → `scripts/logo/generate.py --brand --style --industry`
-3. Ask user about HTML preview → `AskUserQuestion` tool
+3. Ask user about HTML preview → the available question tool (or a chat question if none is available)
 4. If yes, use the bundled `ui-ux-pro-max` skill for the HTML gallery
 
 ## Detailed References
@@ -88,6 +88,8 @@ Options: `--style`, `--industry`, `--prompt`, `--provider`, `--atlas-model`, `--
 - `references/logo-prompt-engineering.md` - AI generation prompts
 
 ## Setup
+
+The commands below use Bash syntax. In PowerShell, set credentials with `$env:NAME = "value"` instead of `export NAME="value"`, and use the available Python 3 interpreter (`python`, `python3`, or `py -3`). Keep credentials in the process environment, outside the skill package.
 
 ```bash
 export GEMINI_API_KEY="your-key"

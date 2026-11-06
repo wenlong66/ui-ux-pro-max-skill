@@ -27,9 +27,9 @@ This workflow is self-contained: it requires no sibling skills or skill-relative
 
 ## Workflow
 
-### Step 1: Gather Requirements (AskUserQuestion)
+### Step 1: Gather Requirements
 
-Collect via AskUserQuestion:
+Collect missing details through the available question tool, or a chat question if none is available:
 1. **Purpose** — social cover, ad banner, website hero, print, or creative asset?
 2. **Platform/size** — which platform or custom dimensions?
 3. **Content** — headline, subtext, CTA, logo placement?

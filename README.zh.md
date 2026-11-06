@@ -229,6 +229,10 @@ Active 集合包括 43 个通用视觉家族、2 个移动端专用风格、4 �
 /plugin install ui-ux-pro-max@ui-ux-pro-max-skill
 ```
 
+### 在 Codex 插件中共用技能
+
+通过支持的插件市场将本仓库安装为 Codex 插件时，Codex 可以读取 `.claude-plugin/plugin.json`，直接加载 `.claude/skills/` 中的同一套七个技能，无需额外的 `.codex-plugin` 清单，也无需执行 `uipro init --ai codex` 生成文件。请保持技能目录及其配套资源完整。
+
 ### 使用 CLI (推荐)
 
 ```bash

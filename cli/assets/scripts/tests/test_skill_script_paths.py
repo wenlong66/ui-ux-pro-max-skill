@@ -10,15 +10,20 @@ sibling sub-skill (the sub-skills are always installed side by side).
 
 This test extracts every `python|python3|node|bash <path>` invocation from every
 markdown file under both trees and asserts that the path is skill-relative and names a
-file that ships. The core skill's `${CLAUDE_PLUGIN_ROOT}/.claude/skills/...` form is
-resolved against the repository root, which is what that variable denotes under a
-plugin install - and accepted only in that file, because the sub-skills also ship
-through the CLI, where the variable does not exist. The grep-based path contract in check-asset-sync.yml is the negative
+file that ships. All skills use their loaded SKILL.md location as the anchor,
+including when a plugin host supplies no plugin environment variables.
+The grep-based path contract in check-asset-sync.yml is the negative
 side (no home-, project- or variable-rooted paths anywhere, code included); this is
 the positive side (every documented invocation points at a real file).
 """
 
+import json
+import os
 import re
+import shutil
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -27,12 +32,7 @@ REPO = next(
     if (parent / "scripts" / "generate-catalog-summary.py").is_file()
 )
 SKILL_TREES = ("cli/assets/skills", ".claude/skills")
-# The only file that may use the plugin-root form: hand-authored for the plugin install
-# and not shipped by the CLI (sync-assets.mjs mirrors data/ and scripts/, never SKILL.md).
-# (Built from segments: the path contract in check-asset-sync.yml scans this file too.)
-PLUGIN_ONLY_FILE = Path(".claude") / "skills" / "ui-ux-pro-max" / "SKILL.md"
 INVOCATION = re.compile(r'(?<![\w/.-])(?:python3?|node|bash)\s+"?([^\s"`\']+\.(?:py|cjs|js|mjs|sh))')
-PLUGIN_ROOT = "${CLAUDE_PLUGIN_ROOT}/"
 
 
 def shipped_invocations():
@@ -46,12 +46,8 @@ def shipped_invocations():
                         yield skill_dir, md, lineno, match.group(1)
 
 
-def resolve(skill_dir, md, path):
+def resolve(skill_dir, path):
     """Return (target, None) for a skill-relative path, or (None, reason)."""
-    if path.startswith(PLUGIN_ROOT):
-        if md.relative_to(REPO) != PLUGIN_ONLY_FILE:
-            return None, "the ${CLAUDE_PLUGIN_ROOT} form is only valid in the plugin-only core SKILL.md"
-        return REPO / path[len(PLUGIN_ROOT):], None
     if path.startswith("scripts/"):
         return skill_dir / path, None
     if path.startswith("../"):
@@ -63,11 +59,52 @@ def resolve(skill_dir, md, path):
 
 
 class SkillScriptPathsTest(unittest.TestCase):
+    def test_skill_markdown_uses_portable_runtime_instructions(self):
+        incompatible = ("AskUserQuestion", "$ARGUMENTS", "/slides:create", "/brand:update")
+        problems = []
+        for md in (REPO / ".claude/skills").rglob("*.md"):
+            text = md.read_text(encoding="utf-8")
+            for token in incompatible:
+                if token in text:
+                    problems.append(f"{md.relative_to(REPO)}: {token}")
+        self.assertEqual(problems, [], "\n" + "\n".join(problems))
+
+    def test_plugin_search_from_another_project_without_plugin_environment(self):
+        source = REPO / ".claude" / "skills" / "ui-ux-pro-max"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            installed = root / "plugin cache" / "ui-ux-pro-max"
+            for directory in ("data", "scripts"):
+                shutil.copytree(source / directory, installed / directory,
+                                ignore=shutil.ignore_patterns("__pycache__", "tests"))
+            project = root / "user project"
+            project.mkdir()
+            env = {key: value for key, value in os.environ.items()
+                   if not key.endswith("_PLUGIN_ROOT")}
+            documented_path = INVOCATION.search(
+                (source / "SKILL.md").read_text(encoding="utf-8")
+            ).group(1)
+            script = installed / documented_path
+            for args in (
+                ["keyboard focus modal", "--domain", "ux"],
+                ["beauty spa wellness service", "--design-system", "--persist",
+                 "-p", "Compatibility Smoke", "--output-dir", str(project)],
+            ):
+                completed = subprocess.run(
+                    [sys.executable, str(script), *args, "--json"],
+                    cwd=project, env=env, capture_output=True, text=True,
+                    encoding="utf-8", check=True,
+                )
+                result = json.loads(completed.stdout)
+                self.assertTrue(result.get("results") or result.get("design_system"))
+            self.assertTrue(list(project.glob("design-system/*/MASTER.md")))
+            self.assertFalse((installed / "design-system").exists())
+
     def test_every_shipped_markdown_invocation_resolves_from_the_skill_directory(self):
         problems, seen = [], 0
         for skill_dir, md, lineno, path in shipped_invocations():
             seen += 1
-            target, reason = resolve(skill_dir, md, path)
+            target, reason = resolve(skill_dir, path)
             if reason is None and not target.is_file():
                 reason = f"no such file: {target}"
             if reason:

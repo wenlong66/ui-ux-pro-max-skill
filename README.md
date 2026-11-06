@@ -262,6 +262,10 @@ Install directly in Claude Code with two commands:
 /plugin install ui-ux-pro-max@ui-ux-pro-max-skill
 ```
 
+### Using the shared skills as a Codex plugin
+
+When this repository is installed as a Codex plugin through a supported marketplace, Codex can read `.claude-plugin/plugin.json` and load the same seven skills from `.claude/skills/`. No separate `.codex-plugin` manifest or `uipro init --ai codex` generation is needed for that plugin installation. Keep the skill directories and their bundled resources together.
+
 ### Using CLI (Recommended)
 
 ```bash

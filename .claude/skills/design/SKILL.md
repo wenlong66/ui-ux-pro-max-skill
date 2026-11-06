@@ -39,7 +39,7 @@ Unified design skill: brand, tokens, UI, logo, CIP, slides, banners, social phot
 
 ## Script Paths
 
-Script paths in this skill and its `references/` are relative to the directory that contains this SKILL.md, not to the project: `scripts/<file>` is this skill's own `scripts/` folder, and `../<skill>/scripts/<file>` is a sibling sub-skill installed alongside it. Build the full path from that directory (Claude Code reports it as the skill's base directory when the skill loads) and keep the working directory at the project root — the scripts read and write project files such as `docs/brand-guidelines.md`, `assets/design-tokens.json` or `src/` relative to it.
+Script paths in this skill and its `references/` are relative to the directory that contains this SKILL.md, not to the project: `scripts/<file>` is this skill's own `scripts/` folder, and `../<skill>/scripts/<file>` is a sibling sub-skill installed alongside it. Resolve that directory from the loaded SKILL.md path, expand script paths to quoted absolute paths before execution, and keep the working directory at the project root — the scripts read and write project files such as `docs/brand-guidelines.md`, `assets/design-tokens.json` or `src/` relative to it.
 
 ## Logo Design (Built-in)
 
@@ -74,7 +74,7 @@ python3 scripts/logo/generate.py --brand "TechFlow" --provider muapi --muapi-mod
 
 **IMPORTANT:** When scripts fail, try to fix them directly.
 
-After generation, **ALWAYS** ask user about HTML preview via `AskUserQuestion`. If yes, use the bundled `ui-ux-pro-max` skill for the gallery.
+After generation, **ALWAYS** ask user about HTML preview via the available question tool (or a chat question if none is available). If yes, use the bundled `ui-ux-pro-max` skill for the gallery.
 
 ## CIP Design (Built-in)
 
@@ -145,7 +145,7 @@ Load `references/banner-sizes-and-styles.md` for complete sizes and styles refer
 
 ### Banner: Workflow
 
-1. **Gather requirements** via `AskUserQuestion` — purpose, platform, content, brand, style, quantity
+1. **Gather requirements** via the available question tool (or a chat question if none is available) — purpose, platform, content, brand, style, quantity
 2. **Research** — Read `references/banner-sizes-and-styles.md` and use the bundled `ui-ux-pro-max` skill for style and palette guidance; if browser research is available and permitted, collect 3–5 references
 3. **Design** — Create the HTML/CSS banner at exact platform dimensions; use supplied assets or CSS-built visuals, or an authorized image-generation capability if the runtime provides one
 4. **Export** — Capture PNG at exact dimensions with the runtime's browser or screenshot capability; if unavailable, deliver the HTML/CSS source and mark PNG export as pending
@@ -232,7 +232,7 @@ Load `references/social-photos-design.md` for sizes, templates, best practices.
 
 1. **Orchestrate** — Track the steps below with the runtime's native task list; parallel subagents for independent work
 2. **Analyze** — Parse prompt: subject, platforms, style, brand context, content elements
-3. **Ideate** — 3-5 concepts, present via `AskUserQuestion`
+3. **Ideate** — 3-5 concepts, present via the available question tool (or a chat question if none is available)
 4. **Design** — bundled `brand` → `design-system` → `ui-ux-pro-max` skills; HTML per idea × size
 5. **Export** — Chrome headless, Playwright, or Puppeteer screenshot at exact px (2x device scale factor where the tool supports it; see the reference)
 6. **Verify** — Open the exported PNGs in an available browser or image viewer and inspect them; fix layout/styling issues and re-export
@@ -307,6 +307,8 @@ python3 --version || python --version
 ```
 
 ## Setup
+
+The commands below use Bash syntax. In PowerShell, set credentials with `$env:NAME = "value"` instead of `export NAME="value"`, and use the available Python 3 interpreter (`python`, `python3`, or `py -3`). Keep credentials in the process environment, outside the skill package.
 
 ```bash
 export GEMINI_API_KEY="your-key"  # https://aistudio.google.com/apikey

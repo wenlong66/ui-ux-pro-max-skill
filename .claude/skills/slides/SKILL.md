@@ -26,7 +26,7 @@ Strategic HTML presentation design with data visualization.
 
 ## Script Paths
 
-Script paths in this skill and its `references/` are relative to the directory that contains this SKILL.md, not to the project: `scripts/<file>` is this skill's own `scripts/` folder, and `../<skill>/scripts/<file>` is a sibling sub-skill installed alongside it. Build the full path from that directory (Claude Code reports it as the skill's base directory when the skill loads) and keep the working directory at the project root — the scripts read and write project files such as `docs/brand-guidelines.md`, `assets/design-tokens.json` or `src/` relative to it.
+Script paths in this skill and its `references/` are relative to the directory that contains this SKILL.md, not to the project: `scripts/<file>` is this skill's own `scripts/` folder, and `../<skill>/scripts/<file>` is a sibling sub-skill installed alongside it. Resolve that directory from the loaded SKILL.md path, expand script paths to quoted absolute paths before execution, and keep the working directory at the project root — the scripts read and write project files such as `docs/brand-guidelines.md`, `assets/design-tokens.json` or `src/` relative to it.
 
 ## References (Knowledge Base)
 
@@ -39,6 +39,6 @@ Script paths in this skill and its `references/` are relative to the directory t
 
 ## Routing
 
-1. Parse subcommand from `$ARGUMENTS` (first word)
-2. Load corresponding `references/{subcommand}.md`
-3. Execute with remaining arguments
+1. Read the topic, audience, slide count, and constraints from the user's current message.
+2. For slide creation, load `references/create.md`.
+3. Execute with those requirements and ask for missing required details through the available question tool or chat.

@@ -242,7 +242,7 @@ def generate_icon(prompt, style=None, category=None, name=None,
 
     if not GEMINI_API_KEY:
         print("Error: GEMINI_API_KEY not set")
-        print("Set it with: export GEMINI_API_KEY='your-key'")
+        print("Set GEMINI_API_KEY in the current process environment before running this command.")
         return None
 
     client = genai.Client(api_key=GEMINI_API_KEY)

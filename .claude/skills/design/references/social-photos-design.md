@@ -51,7 +51,7 @@ Create 3-5 concept ideas that:
 - Vary in composition, color, typography approach
 - Align with brand guidelines if available
 
-Present ideas to user via `AskUserQuestion` for approval before designing.
+Present ideas to user via the available question tool (or a chat question if none is available) for approval before designing.
 
 ### Step 4: Design HTML Files
 

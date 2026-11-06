@@ -22,7 +22,7 @@ Brand identity, voice, messaging, asset management, and consistency frameworks.
 
 ## Script Paths
 
-Script paths in this skill and its `references/` are relative to the directory that contains this SKILL.md, not to the project: `scripts/<file>` is this skill's own `scripts/` folder, and `../<skill>/scripts/<file>` is a sibling sub-skill installed alongside it. Build the full path from that directory (Claude Code reports it as the skill's base directory when the skill loads) and keep the working directory at the project root — the scripts read and write project files such as `docs/brand-guidelines.md`, `assets/design-tokens.json` or `src/` relative to it.
+Script paths in this skill and its `references/` are relative to the directory that contains this SKILL.md, not to the project: `scripts/<file>` is this skill's own `scripts/` folder, and `../<skill>/scripts/<file>` is a sibling sub-skill installed alongside it. Resolve that directory from the loaded SKILL.md path, expand script paths to quoted absolute paths before execution, and keep the working directory at the project root — the scripts read and write project files such as `docs/brand-guidelines.md`, `assets/design-tokens.json` or `src/` relative to it.
 
 ## Quick Start
 
@@ -46,11 +46,11 @@ node scripts/extract-colors.cjs <image-path>
 ## Brand Sync Workflow
 
 ```bash
-# 1. Edit docs/brand-guidelines.md (or use /brand update)
+# 1. Edit docs/brand-guidelines.md (or ask the brand skill to update it)
 # 2. Sync to design tokens
 node scripts/sync-brand-to-tokens.cjs
 # 3. Verify
-node scripts/inject-brand-context.cjs --json | head -20
+node scripts/inject-brand-context.cjs --json
 ```
 
 The sync stops when it detects existing token files, `:root` custom properties
@@ -103,6 +103,6 @@ intentional, re-run with `--force`.
 
 ## Routing
 
-1. Parse subcommand from `$ARGUMENTS` (first word)
-2. Load corresponding `references/{subcommand}.md`
-3. Execute with remaining arguments
+1. Read the requested action and parameters from the user's current message.
+2. For brand updates, load `references/update.md`; for other requests, use the relevant knowledge-base references above.
+3. Apply the supplied parameters and ask for missing required details through the available question tool or chat.
